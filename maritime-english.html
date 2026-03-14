@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maritime English Communication Simulator</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
+:root{--navy:#0b1a2e;--navy2:#112240;--navy3:#1a3050;--gold:#f0c040;--gold2:#d4a520;--sky:#4fc3f7;--red:#ff5252;--green:#66bb6a;--white:#eceff4;--gray:#7b8da0;--card:rgba(17,34,64,0.8);--glass:rgba(255,255,255,0.04);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Outfit',sans-serif;background:var(--navy);color:var(--white);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 30% 40%,rgba(79,195,247,0.06) 0%,transparent 50%),radial-gradient(ellipse at 70% 70%,rgba(240,192,64,0.04) 0%,transparent 40%),linear-gradient(180deg,#0b1a2e 0%,#0e2240 100%);z-index:-1;}
+.nav{position:fixed;top:0;left:0;right:0;background:rgba(11,26,46,0.93);backdrop-filter:blur(20px);border-bottom:1px solid rgba(240,192,64,0.15);z-index:100;padding:0 1.2rem;display:flex;align-items:center;height:60px;}
+.nav-logo{font-family:'Space Mono',monospace;font-weight:700;font-size:0.95rem;color:var(--gold);display:flex;align-items:center;gap:6px;white-space:nowrap;}
+.nav-tabs{display:flex;gap:2px;margin-left:1rem;flex:1;overflow-x:auto;}
+.nav-tab{padding:6px 12px;border-radius:8px;font-size:0.78rem;font-weight:500;cursor:pointer;color:var(--gray);border:none;background:none;white-space:nowrap;font-family:'Outfit';transition:all 0.2s;}
+.nav-tab:hover{color:var(--white);background:var(--glass);}
+.nav-tab.active{color:var(--gold);background:rgba(240,192,64,0.12);}
+.main{padding:76px 1.5rem 3rem;max-width:1100px;margin:0 auto;}
+.sec{display:none;animation:fs 0.4s ease;}.sec.active{display:block;}
+@keyframes fs{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.card{background:var(--card);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:1.4rem;margin-bottom:1rem;backdrop-filter:blur(10px);}
+.card h2{font-size:1.2rem;font-weight:700;margin-bottom:0.4rem;}
+.card h3{font-size:0.95rem;font-weight:600;color:var(--sky);margin-bottom:0.4rem;}
+.card p,.card li{font-size:0.88rem;color:var(--gray);line-height:1.6;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+@media(max-width:768px){.grid-2{grid-template-columns:1fr;}}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:10px;font-family:'Outfit';font-weight:600;font-size:0.88rem;cursor:pointer;border:none;transition:all 0.25s;}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(240,192,64,0.25);}
+.btn-outline{background:transparent;border:1.5px solid var(--gold);color:var(--gold);}
+.btn-sm{padding:8px 14px;font-size:0.8rem;}
+.tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.68rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
+.tag-gold{background:rgba(240,192,64,0.15);color:var(--gold);}
+.tag-sky{background:rgba(79,195,247,0.15);color:var(--sky);}
+.tag-red{background:rgba(255,82,82,0.15);color:var(--red);}
+.tag-green{background:rgba(102,187,106,0.15);color:var(--green);}
+.section-title{font-size:0.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:1.5rem;font-weight:600;}
+.hero{text-align:center;padding:2.5rem 1rem;}
+.hero h1{font-size:2.2rem;font-weight:800;line-height:1.15;margin-bottom:1rem;background:linear-gradient(135deg,var(--gold),var(--sky));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hero p{font-size:1rem;color:var(--gray);max-width:600px;margin:0 auto 2rem;line-height:1.6;}
+
+.dialog-box{background:rgba(11,26,46,0.9);border:1px solid rgba(79,195,247,0.2);border-radius:12px;padding:1rem;margin:0.8rem 0;font-size:0.85rem;}
+.dialog-line{display:flex;gap:8px;margin-bottom:6px;line-height:1.5;}
+.dialog-speaker{font-weight:700;color:var(--sky);min-width:80px;flex-shrink:0;}
+.dialog-text{color:var(--white);}
+
+.sim-tabs{display:flex;gap:4px;margin-bottom:1rem;flex-wrap:wrap;}
+.sim-tab{padding:7px 13px;border-radius:8px;font-size:0.78rem;font-weight:500;cursor:pointer;border:1px solid rgba(255,255,255,0.08);background:transparent;color:var(--gray);transition:all 0.2s;font-family:'Outfit';}
+.sim-tab:hover{color:var(--white);}
+.sim-tab.active{color:var(--gold);border-color:var(--gold);background:rgba(240,192,64,0.08);}
+
+.quiz-option{display:block;width:100%;text-align:left;padding:12px 16px;margin-bottom:7px;background:rgba(255,255,255,0.03);border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;color:var(--white);font-family:'Outfit';font-size:0.88rem;cursor:pointer;transition:all 0.2s;}
+.quiz-option:hover{border-color:var(--gold);background:rgba(240,192,64,0.06);}
+.quiz-option.correct{border-color:var(--green);background:rgba(102,187,106,0.12);color:var(--green);}
+.quiz-option.wrong{border-color:var(--red);background:rgba(255,82,82,0.1);color:var(--red);}
+.quiz-option.disabled{pointer-events:none;opacity:0.6;}.quiz-option.disabled.correct{opacity:1;}
+.quiz-progress{height:5px;background:rgba(255,255,255,0.06);border-radius:3px;margin-bottom:1.2rem;overflow:hidden;}
+.quiz-bar{height:100%;background:linear-gradient(90deg,var(--gold),var(--sky));border-radius:3px;transition:width 0.4s ease;}
+.expl-box{margin-top:10px;padding:12px;background:rgba(79,195,247,0.08);border-left:3px solid var(--sky);border-radius:0 8px 8px 0;font-size:0.84rem;color:var(--gray);line-height:1.5;}
+
+.scenario-card{background:rgba(240,192,64,0.04);border:1px solid rgba(240,192,64,0.15);border-radius:12px;padding:1.2rem;margin-bottom:1rem;cursor:pointer;transition:all 0.3s;}
+.scenario-card:hover{border-color:var(--gold);transform:translateY(-2px);}
+.scenario-card h3{color:var(--gold);}
+
+.sim-input{width:100%;padding:12px 16px;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;color:var(--white);font-family:'Outfit';font-size:0.88rem;outline:none;transition:border-color 0.2s;}
+.sim-input:focus{border-color:var(--gold);}
+.sim-input::placeholder{color:rgba(255,255,255,0.2);}
+
+.grade-display{text-align:center;padding:2rem;background:rgba(255,255,255,0.02);border-radius:16px;margin:1rem 0;}
+.grade-letter{font-family:'Space Mono';font-size:3.5rem;font-weight:700;line-height:1;}
+.grade-label{font-size:0.85rem;color:var(--gray);margin-top:6px;}
+.result-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:1rem 0;}
+.result-item{text-align:center;padding:1rem;background:rgba(255,255,255,0.03);border-radius:12px;}
+.result-item .ri-val{font-family:'Space Mono';font-size:1.3rem;font-weight:700;}
+.result-item .ri-label{font-size:0.7rem;color:var(--gray);margin-top:4px;}
+@media(max-width:768px){.result-summary{grid-template-columns:repeat(2,1fr);}}
+
+.score-row{display:flex;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);gap:8px;}
+.score-num{width:28px;font-family:'Space Mono';font-size:0.78rem;color:var(--gray);flex-shrink:0;}
+.score-text{flex:1;font-size:0.83rem;color:var(--white);}
+.score-status{width:24px;text-align:center;font-size:0.9rem;flex-shrink:0;}
+
+.phonetic-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;margin:0.8rem 0;}
+.phonetic-item{padding:8px;background:rgba(79,195,247,0.06);border-radius:8px;text-align:center;font-size:0.8rem;}
+.phonetic-item strong{color:var(--sky);display:block;font-size:0.9rem;}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-logo">&#9875; Maritime English Sim</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" data-s="home" onclick="go('home')">Home</button>
+    <button class="nav-tab" data-s="learn" onclick="go('learn')">Materi</button>
+    <button class="nav-tab" data-s="sim" onclick="go('sim')">Simulator</button>
+    <button class="nav-tab" data-s="quiz" onclick="go('quiz')">Kuis</button>
+    <button class="nav-tab" data-s="eval" onclick="go('eval')">Evaluasi</button>
+    <button class="nav-tab" data-s="result" onclick="go('result')">Hasil</button>
+  </div>
+</nav>
+<div class="main">
+
+<!-- HOME -->
+<div id="home" class="sec active">
+  <div class="hero">
+    <div class="section-title">Interactive Learning Application</div>
+    <h1>Maritime English<br>Communication<br>Simulator</h1>
+    <p>Kuasai komunikasi Bahasa Inggris Maritim melalui skenario interaktif, latihan SMCP, dan simulasi komunikasi VHF yang realistis.</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-gold" onclick="go('learn')">Mulai Belajar</button>
+      <button class="btn btn-outline" onclick="go('sim')">Buka Simulator</button>
+    </div>
+  </div>
+  <div style="display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;margin:2rem 0">
+    <div style="text-align:center"><div style="font-family:'Space Mono';font-size:1.8rem;font-weight:700;color:var(--gold)">4</div><div style="font-size:0.75rem;color:var(--gray)">Modul Materi</div></div>
+    <div style="text-align:center"><div style="font-family:'Space Mono';font-size:1.8rem;font-weight:700;color:var(--sky)">8</div><div style="font-size:0.75rem;color:var(--gray)">Skenario Simulasi</div></div>
+    <div style="text-align:center"><div style="font-family:'Space Mono';font-size:1.8rem;font-weight:700;color:var(--green)">20+20</div><div style="font-size:0.75rem;color:var(--gray)">Soal Kuis & Evaluasi</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card" onclick="go('learn')" style="cursor:pointer"><span class="tag tag-gold">Module 1</span><h3 style="margin-top:8px">Introduction to Maritime English</h3><p>Phonetic Alphabet, Numbers, Basic Maritime Vocabulary</p></div>
+    <div class="card" onclick="go('learn');setTimeout(()=>showLM(1),50)" style="cursor:pointer"><span class="tag tag-sky">Module 2</span><h3 style="margin-top:8px">SMCP & VHF Communication</h3><p>Message Markers, Calling Procedures, Helm Orders</p></div>
+    <div class="card" onclick="go('learn');setTimeout(()=>showLM(2),50)" style="cursor:pointer"><span class="tag tag-red">Module 3</span><h3 style="margin-top:8px">Emergency Communication</h3><p>MAYDAY, PAN PAN, SECURITE, Man Overboard</p></div>
+    <div class="card" onclick="go('learn');setTimeout(()=>showLM(3),50)" style="cursor:pointer"><span class="tag tag-green">Module 4</span><h3 style="margin-top:8px">Port & Pilotage</h3><p>Arrival, Departure, Berthing, Cargo Operations</p></div>
+  </div>
+</div>
+
+<!-- LEARN -->
+<div id="learn" class="sec">
+  <div class="section-title">Learning Materials</div>
+  <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:1.2rem">Maritime English Communication</h1>
+  <div class="sim-tabs" id="lTabs">
+    <button class="sim-tab active" onclick="showLM(0)">Introduction</button>
+    <button class="sim-tab" onclick="showLM(1)">SMCP & VHF</button>
+    <button class="sim-tab" onclick="showLM(2)">Emergency</button>
+    <button class="sim-tab" onclick="showLM(3)">Port & Pilotage</button>
+  </div>
+  <div id="lm0" class="lmod">
+    <div class="card"><h2>What is Maritime English?</h2><p>Maritime English is the specialized English used in the shipping industry. IMO recognizes it as the <strong style="color:var(--gold)">official working language at sea</strong>. It covers navigation, operations, safety, and social communication.</p></div>
+    <div class="card"><h2>NATO Phonetic Alphabet</h2><p style="margin-bottom:0.8rem">Used to spell words over radio clearly:</p>
+      <div class="phonetic-grid">
+        <div class="phonetic-item"><strong>A</strong>Alfa</div><div class="phonetic-item"><strong>B</strong>Bravo</div><div class="phonetic-item"><strong>C</strong>Charlie</div><div class="phonetic-item"><strong>D</strong>Delta</div><div class="phonetic-item"><strong>E</strong>Echo</div><div class="phonetic-item"><strong>F</strong>Foxtrot</div><div class="phonetic-item"><strong>G</strong>Golf</div><div class="phonetic-item"><strong>H</strong>Hotel</div><div class="phonetic-item"><strong>I</strong>India</div><div class="phonetic-item"><strong>J</strong>Juliet</div><div class="phonetic-item"><strong>K</strong>Kilo</div><div class="phonetic-item"><strong>L</strong>Lima</div><div class="phonetic-item"><strong>M</strong>Mike</div><div class="phonetic-item"><strong>N</strong>November</div><div class="phonetic-item"><strong>O</strong>Oscar</div><div class="phonetic-item"><strong>P</strong>Papa</div><div class="phonetic-item"><strong>Q</strong>Quebec</div><div class="phonetic-item"><strong>R</strong>Romeo</div><div class="phonetic-item"><strong>S</strong>Sierra</div><div class="phonetic-item"><strong>T</strong>Tango</div><div class="phonetic-item"><strong>U</strong>Uniform</div><div class="phonetic-item"><strong>V</strong>Victor</div><div class="phonetic-item"><strong>W</strong>Whiskey</div><div class="phonetic-item"><strong>X</strong>X-ray</div><div class="phonetic-item"><strong>Y</strong>Yankee</div><div class="phonetic-item"><strong>Z</strong>Zulu</div>
+      </div>
+    </div>
+    <div class="card"><h2>Maritime Numbers</h2><p><strong style="color:var(--white)">Course/Bearing:</strong> Spoken digit by digit. 045 = "Zero Four Five"</p><p><strong style="color:var(--white)">Time:</strong> 4-digit UTC. 0830 = "Zero Eight Three Zero UTC"</p><p><strong style="color:var(--white)">Position:</strong> Lat 06°10'S = "Latitude Zero Six degrees One Zero minutes South"</p></div>
+  </div>
+  <div id="lm1" class="lmod" style="display:none">
+    <div class="card"><h2>SMCP Message Markers</h2><p style="margin-bottom:0.8rem">Standard phrases that begin every communication:</p>
+      <div class="grid-2">
+        <div style="padding:10px;background:rgba(240,192,64,0.06);border-radius:10px"><strong style="color:var(--gold)">INSTRUCTION</strong><br><span style="font-size:0.82rem;color:var(--gray)">"INSTRUCTION. Do not overtake."</span></div>
+        <div style="padding:10px;background:rgba(79,195,247,0.06);border-radius:10px"><strong style="color:var(--sky)">ADVICE</strong><br><span style="font-size:0.82rem;color:var(--gray)">"ADVICE. Alter course to port."</span></div>
+        <div style="padding:10px;background:rgba(255,82,82,0.06);border-radius:10px"><strong style="color:var(--red)">WARNING</strong><br><span style="font-size:0.82rem;color:var(--gray)">"WARNING. Dangerous area ahead."</span></div>
+        <div style="padding:10px;background:rgba(102,187,106,0.06);border-radius:10px"><strong style="color:var(--green)">INFORMATION</strong><br><span style="font-size:0.82rem;color:var(--gray)">"INFORMATION. Pilot boarding at 0800."</span></div>
+      </div>
+      <p style="margin-top:0.8rem">Other markers: QUESTION, ANSWER, REQUEST, INTENTION</p>
+    </div>
+    <div class="card"><h2>VHF Calling Procedure</h2>
+      <div class="dialog-box"><div class="dialog-line"><span class="dialog-speaker">Ship:</span><span class="dialog-text">Jakarta Port Control (x3). This is MV Bintang Laut (x3). Call sign: Bravo India November Tango. Over.</span></div><div class="dialog-line"><span class="dialog-speaker">Port:</span><span class="dialog-text">MV Bintang Laut, this is Jakarta Port Control. Go ahead. Over.</span></div></div>
+      <p><strong style="color:var(--gold)">Rules:</strong> Name called 3x, own name 3x. "Over" = expecting reply. "Out" = end. Never "Over and Out"!</p>
+    </div>
+    <div class="card"><h2>Standard Helm Orders</h2>
+      <div class="grid-2">
+        <div><p><strong style="color:var(--white)">Port ten</strong> → Turn 10° left</p><p><strong style="color:var(--white)">Starboard twenty</strong> → Turn 20° right</p><p><strong style="color:var(--white)">Midships</strong> → Rudder amidships</p></div>
+        <div><p><strong style="color:var(--white)">Hard port/starboard</strong> → Maximum rudder</p><p><strong style="color:var(--white)">Steady</strong> → Maintain current heading</p><p><strong style="color:var(--white)">Steer [course]</strong> → Head to specific course</p></div>
+      </div>
+      <p style="margin-top:8px;padding:10px;background:rgba(255,82,82,0.06);border-radius:8px"><strong style="color:var(--red)">Critical:</strong> Helmsman MUST repeat back every order before executing!</p>
+    </div>
+  </div>
+  <div id="lm2" class="lmod" style="display:none">
+    <div class="card"><h2>Three Levels of Emergency</h2>
+      <div class="grid-2" style="margin-top:0.8rem">
+        <div class="card" style="margin-bottom:0;background:rgba(255,82,82,0.06);border-color:rgba(255,82,82,0.2)"><h3 style="color:var(--red)">MAYDAY (Distress)</h3><p>Grave and imminent danger. Life-threatening situation. Requires immediate assistance.</p></div>
+        <div class="card" style="margin-bottom:0;background:rgba(240,192,64,0.06);border-color:rgba(240,192,64,0.2)"><h3 style="color:var(--gold)">PAN PAN (Urgency)</h3><p>Urgent situation but no immediate danger to life. Engine failure, medical emergency.</p></div>
+      </div>
+      <div class="card" style="margin-top:1rem;margin-bottom:0;background:rgba(79,195,247,0.06);border-color:rgba(79,195,247,0.2)"><h3>SECURITE (Safety)</h3><p>Navigation safety information. Weather warnings, floating objects, unlit vessels.</p></div>
+    </div>
+    <div class="card"><h2>MAYDAY Call Format</h2>
+      <div class="dialog-box"><div class="dialog-line"><span class="dialog-speaker">Call:</span><span class="dialog-text">MAYDAY MAYDAY MAYDAY. This is MV Nusantara (x3). MAYDAY MV Nusantara. Position: Lat 06°30'S, Long 110°20'E. I am on fire. 25 POB. Require firefighting assistance. Over.</span></div></div>
+    </div>
+    <div class="card"><h2>Man Overboard</h2><p><strong style="color:var(--red)">Immediate:</strong> Shout "MAN OVERBOARD, PORT/STARBOARD!" → Throw lifebuoy → Press MOB → Alert bridge</p><p><strong style="color:var(--gold)">Bridge:</strong> 3 prolonged blasts → Execute turn → Broadcast PAN PAN on Ch 16</p></div>
+  </div>
+  <div id="lm3" class="lmod" style="display:none">
+    <div class="card"><h2>Port Arrival Communication</h2>
+      <div class="dialog-box"><div class="dialog-line"><span class="dialog-speaker">Ship:</span><span class="dialog-text">Port Control, this is MV Samudra. INFORMATION. Approaching pilot station. ETA 1300 UTC. REQUEST. Pilot and berth. Over.</span></div><div class="dialog-line"><span class="dialog-speaker">Port:</span><span class="dialog-text">MV Samudra. Berth 107, Terminal 3. Pilot at 1300. Reduce to 6 knots. Over.</span></div></div>
+    </div>
+    <div class="card"><h2>Pilotage Communication</h2>
+      <div class="dialog-box"><div class="dialog-line"><span class="dialog-speaker">Pilot:</span><span class="dialog-text">Good morning Captain. Ship's draft?</span></div><div class="dialog-line"><span class="dialog-speaker">Captain:</span><span class="dialog-text">Forward 8.5m, aft 9.2m. Course 180, speed 8 knots.</span></div><div class="dialog-line"><span class="dialog-speaker">Pilot:</span><span class="dialog-text">I will take the con. Starboard ten.</span></div><div class="dialog-line"><span class="dialog-speaker">Helm:</span><span class="dialog-text">Starboard ten, Sir.</span></div></div>
+    </div>
+    <div class="card"><h2>Berthing Commands</h2><p><strong style="color:var(--white)">Tugs:</strong> "Make fast forward/aft." "Push/Pull." "Let go."</p><p><strong style="color:var(--white)">Lines:</strong> "Send heaving line." "Make fast head/stern/spring line." "All fast fore and aft."</p><p><strong style="color:var(--white)">Engine:</strong> "Dead slow ahead." "Slow ahead." "Half ahead." "Full ahead." "Stop engine." "Dead slow astern."</p></div>
+  </div>
+</div>
+
+<!-- SIMULATOR -->
+<div id="sim" class="sec">
+  <div class="section-title">Communication Simulator</div>
+  <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:0.5rem">Praktik Komunikasi Maritim</h1>
+  <p style="color:var(--gray);margin-bottom:1.5rem">Pilih skenario dan lengkapi dialog komunikasi maritim. Latih kemampuan Anda dalam situasi nyata.</p>
+  <div class="sim-tabs" id="simTabs">
+    <button class="sim-tab active" onclick="showSim(0)">VHF Calling</button>
+    <button class="sim-tab" onclick="showSim(1)">Helm Orders</button>
+    <button class="sim-tab" onclick="showSim(2)">MAYDAY</button>
+    <button class="sim-tab" onclick="showSim(3)">Port Arrival</button>
+  </div>
+  <div id="simContent"></div>
+</div>
+
+<!-- QUIZ 20 soal -->
+<div id="quiz" class="sec">
+  <div class="section-title">Practice Quiz</div>
+  <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:0.5rem">Kuis Latihan (20 Soal)</h1>
+  <p style="color:var(--gray);margin-bottom:1.2rem">Latihan dengan pembahasan langsung.</p>
+  <div class="quiz-progress"><div class="quiz-bar" id="qBar" style="width:0%"></div></div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem"><span class="tag tag-gold" id="qNum">1/20</span><span style="font-family:'Space Mono';font-size:0.85rem;color:var(--gold)" id="qSc">Skor: 0</span></div>
+    <h2 id="qQ" style="margin-bottom:1rem;line-height:1.5"></h2>
+    <div id="qO"></div>
+    <div id="qE" style="display:none"></div>
+    <div style="margin-top:1rem;text-align:right"><button class="btn btn-gold btn-sm" id="qN" onclick="nxQ()" style="display:none">Next</button></div>
+  </div>
+</div>
+
+<!-- EVALUASI 20 soal -->
+<div id="eval" class="sec">
+  <div class="section-title">Final Evaluation</div>
+  <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:0.5rem">Evaluasi Akhir (20 Soal)</h1>
+  <p style="color:var(--gray);margin-bottom:1.2rem">5 poin per soal. Total 100. Nilai diberikan di akhir.</p>
+  <div id="evIntro" class="card" style="text-align:center;padding:2.5rem">
+    <h2>Ready for Evaluation?</h2>
+    <p style="margin:1rem 0">20 soal Maritime English Communication. Tidak dapat kembali ke soal sebelumnya.</p>
+    <button class="btn btn-gold" onclick="startEv()" style="font-size:1rem;padding:14px 36px">Start Evaluation</button>
+  </div>
+  <div id="evActive" style="display:none">
+    <div class="quiz-progress"><div class="quiz-bar" id="evBar" style="width:0%"></div></div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem"><span class="tag tag-red" id="evNum">1/20</span><span style="font-family:'Space Mono';font-size:0.85rem;color:var(--gray)" id="evAns">0/20</span></div>
+      <h2 id="evQ" style="margin-bottom:1rem;line-height:1.5"></h2>
+      <div id="evO"></div>
+      <div style="margin-top:1rem;text-align:right"><button class="btn btn-gold btn-sm" id="evN" onclick="nxEv()" style="display:none">Next</button></div>
+    </div>
+  </div>
+  <div id="evResult" style="display:none">
+    <div class="grade-display"><div style="font-size:0.72rem;letter-spacing:2px;color:var(--gray);margin-bottom:8px">YOUR SCORE</div><div class="grade-letter" id="evGL" style="color:var(--gold)">A</div><div class="grade-label" id="evGLb">Excellent</div><div style="font-family:'Space Mono';font-size:1.3rem;font-weight:700;color:var(--gold);margin-top:8px" id="evGS">100/100</div></div>
+    <div class="result-summary"><div class="result-item"><div class="ri-val" style="color:var(--green)" id="evC">0</div><div class="ri-label">Correct</div></div><div class="result-item"><div class="ri-val" style="color:var(--red)" id="evW">0</div><div class="ri-label">Wrong</div></div><div class="result-item"><div class="ri-val" style="color:var(--gold)" id="evSV">0</div><div class="ri-label">Score</div></div><div class="result-item"><div class="ri-val" style="color:var(--sky)" id="evPV">0%</div><div class="ri-label">Percentage</div></div></div>
+    <div class="card"><h2>Review</h2><div id="evBD"></div></div>
+    <div style="text-align:center;margin-top:1rem;display:flex;gap:12px;justify-content:center;flex-wrap:wrap"><button class="btn btn-outline" onclick="resetEv()">Retry</button><button class="btn btn-gold" onclick="go('result')">See Results</button></div>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="result" class="sec">
+  <div class="section-title">Summary</div>
+  <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:1.5rem">Learning Results</h1>
+  <div class="grid-2">
+    <div class="card"><h3 style="color:var(--gold)">Quiz (20 soal)</h3><div style="display:flex;gap:1rem;margin-top:0.8rem"><div><div style="font-family:'Space Mono';font-size:1.3rem;font-weight:700;color:var(--green)" id="rC">0</div><div style="font-size:0.7rem;color:var(--gray)">Benar</div></div><div><div style="font-family:'Space Mono';font-size:1.3rem;font-weight:700;color:var(--red)" id="rW">0</div><div style="font-size:0.7rem;color:var(--gray)">Salah</div></div></div></div>
+    <div class="card"><h3 style="color:var(--red)">Evaluasi (20 soal)</h3><div style="display:flex;gap:1rem;margin-top:0.8rem"><div><div style="font-family:'Space Mono';font-size:1.3rem;font-weight:700;color:var(--green)" id="rEC">-</div><div style="font-size:0.7rem;color:var(--gray)">Benar</div></div><div><div style="font-family:'Space Mono';font-size:1.3rem;font-weight:700;color:var(--gold)" id="rES">-</div><div style="font-size:0.7rem;color:var(--gray)">Nilai</div></div></div></div>
+  </div>
+  <div style="text-align:center;margin-top:1.5rem"><button class="btn btn-outline" onclick="resetAll()">Reset All</button></div>
+</div>
+
+</div>
+<script>
+function go(id){document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav-tab').forEach(t=>t.classList.toggle('active',t.dataset.s===id));if(id==='quiz'&&!qStarted)startQ();if(id==='result')updRes();window.scrollTo(0,0);}
+function showLM(i){document.querySelectorAll('.lmod').forEach(m=>m.style.display='none');document.getElementById('lm'+i).style.display='block';document.querySelectorAll('#lTabs .sim-tab').forEach((t,j)=>t.classList.toggle('active',j===i));}
+
+// SIMULATOR SCENARIOS
+const scenarios=[
+  {title:"VHF Calling Procedure",desc:"Complete a standard VHF call to Port Control",steps:[
+    {speaker:"You (MV Garuda)",prompt:"Call Jakarta Port Control on VHF (name x3, your ship x3, call sign)",answer:"Jakarta Port Control, Jakarta Port Control, Jakarta Port Control. This is Motor Vessel Garuda, Motor Vessel Garuda, Motor Vessel Garuda. Call sign: Golf Alfa Romeo Delta. Over.",hint:"Remember: Call name 3 times, then your name 3 times, then call sign using phonetic alphabet."},
+    {speaker:"Port Control",auto:"Motor Vessel Garuda, this is Jakarta Port Control. Go ahead. Over."},
+    {speaker:"You (MV Garuda)",prompt:"Report your ETA at pilot station as 0800 UTC and request pilot",answer:"Jakarta Port Control. INFORMATION. My ETA at pilot station is zero eight zero zero UTC. REQUEST. Pilot on arrival. Over.",hint:"Use INFORMATION marker for facts, REQUEST marker for asking something."},
+    {speaker:"Port Control",auto:"Motor Vessel Garuda. Received. Pilot will board at zero eight zero zero. Over."},
+    {speaker:"You (MV Garuda)",prompt:"Acknowledge and end the communication",answer:"Jakarta Port Control. Received. Thank you. Out.",hint:"Use 'Out' to end communication (not 'Over and Out')."},
+  ]},
+  {title:"Helm Orders Practice",desc:"Give correct helm orders as Officer of the Watch",steps:[
+    {speaker:"OOW (You)",prompt:"Order helmsman to turn 15 degrees to port",answer:"Port fifteen.",hint:"State direction first, then degrees."},
+    {speaker:"Helmsman",auto:"Port fifteen, Sir."},
+    {speaker:"OOW (You)",prompt:"Order helmsman to return rudder to center",answer:"Midships.",hint:"'Midships' means rudder amidships/center."},
+    {speaker:"Helmsman",auto:"Midships, Sir."},
+    {speaker:"OOW (You)",prompt:"Order to steer course 270",answer:"Steer two seven zero.",hint:"Say 'Steer' followed by the course digit by digit."},
+    {speaker:"Helmsman",auto:"Steer two seven zero, Sir. Steady on course two seven zero."},
+  ]},
+  {title:"MAYDAY Call",desc:"Perform a distress call for a ship on fire",steps:[
+    {speaker:"You (MV Bintang)",prompt:"Begin the MAYDAY call (say MAYDAY 3 times, identify your ship)",answer:"MAYDAY MAYDAY MAYDAY. This is Motor Vessel Bintang, Motor Vessel Bintang, Motor Vessel Bintang.",hint:"MAYDAY must be said 3 times, ship name 3 times."},
+    {speaker:"You (continue)",prompt:"Give your position: Lat 06°30'S, Long 110°20'E",answer:"MAYDAY Motor Vessel Bintang. My position is latitude zero six degrees three zero minutes South, longitude one one zero degrees two zero minutes East.",hint:"Say each digit separately for clarity."},
+    {speaker:"You (continue)",prompt:"State nature of distress (fire), persons on board (22), assistance needed",answer:"I am on fire and require immediate assistance. I have two two persons on board. I require firefighting assistance. Over.",hint:"State: nature of distress, POB, type of assistance needed."},
+    {speaker:"Coast Guard",auto:"Motor Vessel Bintang, this is Jakarta Coast Guard. MAYDAY received. Rescue vessel dispatched to your position. ETA three zero minutes. Over."},
+  ]},
+  {title:"Port Arrival",desc:"Complete arrival communication with port control",steps:[
+    {speaker:"You (MV Samudra)",prompt:"Call Surabaya Port Control, report approaching pilot station, ETA 1400 UTC",answer:"Surabaya Port Control, Surabaya Port Control, Surabaya Port Control. This is Motor Vessel Samudra. INFORMATION. I am approaching pilot station. My ETA is one four zero zero UTC. REQUEST. Pilot boarding and berth allocation. Over.",hint:"Use INFORMATION for facts, REQUEST for what you need."},
+    {speaker:"Port Control",auto:"Motor Vessel Samudra. Your berth is number two zero five at terminal two. Pilot will board at one four zero zero UTC. Reduce speed to six knots. Over."},
+    {speaker:"You (MV Samudra)",prompt:"Confirm berth number, pilot time, and speed reduction",answer:"Surabaya Port Control. Received. Berth two zero five, terminal two. Pilot at one four zero zero. Reducing speed to six knots. Over.",hint:"Always repeat back key information to confirm."},
+  ]}
+];
+let curSim=0,curStep=0;
+function showSim(i){curSim=i;curStep=0;document.querySelectorAll('#simTabs .sim-tab').forEach((t,j)=>t.classList.toggle('active',j===i));renderSim();}
+function renderSim(){
+  const sc=scenarios[curSim];let h='<div class="card"><h2>'+sc.title+'</h2><p style="margin-bottom:1rem">'+sc.desc+'</p>';
+  for(let s=0;s<=curStep&&s<sc.steps.length;s++){
+    const st=sc.steps[s];
+    if(st.auto){h+='<div class="dialog-box"><div class="dialog-line"><span class="dialog-speaker">'+st.speaker+'</span><span class="dialog-text">'+st.auto+'</span></div></div>';
+    }else if(s<curStep){h+='<div class="dialog-box" style="border-color:rgba(102,187,106,0.3)"><div class="dialog-line"><span class="dialog-speaker" style="color:var(--green)">'+st.speaker+'</span><span class="dialog-text">'+st.answer+'</span></div></div>';
+    }else{h+='<div style="margin:1rem 0"><p style="font-size:0.85rem;color:var(--gold);margin-bottom:8px"><strong>'+st.speaker+':</strong> '+st.prompt+'</p><input class="sim-input" id="simIn" placeholder="Type your response in English..." style="margin-bottom:8px"><p style="font-size:0.78rem;color:var(--gray)">💡 '+st.hint+'</p><div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-gold btn-sm" onclick="checkSim()">Submit</button><button class="btn btn-outline btn-sm" onclick="showAnswer()">Show Answer</button></div><div id="simFb"></div></div>';}
+  }
+  if(curStep>=sc.steps.length)h+='<div style="text-align:center;padding:1.5rem;background:rgba(102,187,106,0.06);border-radius:12px;margin-top:1rem"><p style="color:var(--green);font-weight:700;font-size:1rem">&#9989; Scenario Complete!</p><p style="color:var(--gray);margin-top:4px">Great job! Try another scenario or take the quiz.</p></div>';
+  h+='</div>';document.getElementById('simContent').innerHTML=h;
+}
+function checkSim(){const v=document.getElementById('simIn').value.trim().toLowerCase();const a=scenarios[curSim].steps[curStep].answer.toLowerCase();const sim=v.length>10&&(a.includes(v.substring(0,20))||v.includes(a.substring(0,20))||similarity(v,a)>0.4);document.getElementById('simFb').innerHTML=sim?'<div class="expl-box" style="border-color:var(--green)">&#9989; Good attempt! Model answer: <strong>'+scenarios[curSim].steps[curStep].answer+'</strong></div>':'<div class="expl-box" style="border-color:var(--red)">Try again or click "Show Answer". Model: <strong>'+scenarios[curSim].steps[curStep].answer+'</strong></div>';if(sim){setTimeout(()=>{curStep++;while(curStep<scenarios[curSim].steps.length&&scenarios[curSim].steps[curStep].auto)curStep++;renderSim();},1500);}}
+function showAnswer(){document.getElementById('simFb').innerHTML='<div class="expl-box">Model answer: <strong>'+scenarios[curSim].steps[curStep].answer+'</strong></div>';setTimeout(()=>{curStep++;while(curStep<scenarios[curSim].steps.length&&scenarios[curSim].steps[curStep].auto)curStep++;renderSim();},2000);}
+function similarity(a,b){const w1=a.split(/\s+/),w2=b.split(/\s+/);let m=0;w1.forEach(w=>{if(w2.includes(w))m++;});return m/Math.max(w1.length,w2.length);}
+
+// QUIZ
+const QD=[
+  {q:"What does SMCP stand for?",o:["Standard Maritime Code Procedures","Standard Marine Communication Phrases","Ship Maritime Communication Protocol","Safety Marine Communication Plan"],a:1,e:"SMCP = Standard Marine Communication Phrases, adopted by IMO."},
+  {q:"Which VHF channel is used for distress?",o:["Channel 6","Channel 12","Channel 16","Channel 70"],a:2,e:"Channel 16 (156.8 MHz) is the international distress frequency."},
+  {q:"'N' in NATO phonetic alphabet is?",o:["Nancy","November","Neptune","Niner"],a:1,e:"N = November in the NATO/IMO phonetic alphabet."},
+  {q:"What message marker is used for warnings?",o:["ADVICE","INSTRUCTION","WARNING","INFORMATION"],a:2,e:"WARNING is used for danger-related messages."},
+  {q:"What does 'Midships' mean?",o:["Go to middle of ship","Rudder to center position","Stop the engine","Anchors amid ship"],a:1,e:"Midships = return rudder to center/neutral position."},
+  {q:"How many times is ship name called in VHF?",o:["1 time","2 times","3 times","4 times"],a:2,e:"Both the called station and own ship name are said 3 times."},
+  {q:"MAYDAY is used for?",o:["Routine calls","Safety warnings","Grave and imminent danger","Equipment testing"],a:2,e:"MAYDAY = distress, grave and imminent danger to life."},
+  {q:"What does helmsman say after receiving an order?",o:["OK Captain","Repeat the order back","Nothing","Aye aye"],a:1,e:"Helmsman MUST repeat the order back before executing."},
+  {q:"PAN PAN is used for?",o:["Distress","Urgency","Safety","Routine"],a:1,e:"PAN PAN = urgency, serious but not immediately life-threatening."},
+  {q:"'Over' at end of VHF message means?",o:["Communication ended","Expecting reply","Repeat message","Roger"],a:1,e:"'Over' = I have finished, expecting your reply."},
+  {q:"Course 045 is spoken as?",o:["Forty-five","Zero four five","Zero forty five","Four five"],a:1,e:"Courses are spoken digit by digit: Zero Four Five."},
+  {q:"'Port' refers to which side?",o:["Right side","Left side","Front","Back"],a:1,e:"Port = left side of the ship (facing forward)."},
+  {q:"SECURITE is used for?",o:["Distress","Urgency","Navigation safety","Greetings"],a:2,e:"SECURITE = safety information about navigation or weather."},
+  {q:"What is ETA?",o:["Extra Time Allocated","Estimated Time of Arrival","Engine Test Approved","Emergency Transit Area"],a:1,e:"ETA = Estimated Time of Arrival."},
+  {q:"First action for man overboard?",o:["Call Coast Guard","Shout and throw lifebuoy","Stop engine","Blow whistle 5 times"],a:1,e:"Shout 'MAN OVERBOARD!', throw lifebuoy, press MOB, alert bridge."},
+  {q:"'Starboard twenty' means?",o:["Turn 20° left","Turn 20° right","Speed 20 knots","Heading 020"],a:1,e:"Starboard twenty = turn rudder 20 degrees to the right."},
+  {q:"STCW stands for?",o:["Standard Training for Crew Workers","Standards of Training Certification and Watchkeeping","Ship Training and Certification Worldwide","Safety Training for Commercial Watercraft"],a:1,e:"STCW = Standards of Training, Certification and Watchkeeping for Seafarers."},
+  {q:"'All fast fore and aft' means?",o:["Ship is moving fast","All mooring lines secured","All crew at stations","Full speed ahead and astern"],a:1,e:"All mooring lines are secured at both bow and stern."},
+  {q:"Pilot asks 'What is the ship's draft?' You answer?",o:["The ship's weight","Forward and aft draft in meters","The ship's speed","The cargo manifest"],a:1,e:"Draft = depth of hull below waterline, given forward and aft."},
+  {q:"Why should you never say 'Over and Out'?",o:["It's bad luck","Over means expecting reply, Out means finished - contradictory","It's too long","It's not in English"],a:1,e:"'Over' (expecting reply) and 'Out' (finished) contradict each other."},
+];
+let qI=0,qOk=0,qA=0,qStarted=false;
+function startQ(){qI=0;qOk=0;qA=0;qStarted=true;showQ();}
+function showQ(){if(qI>=QD.length){go('result');return;}const q=QD[qI];document.getElementById('qNum').textContent=(qI+1)+'/'+QD.length;document.getElementById('qSc').textContent='Skor: '+qOk*10;document.getElementById('qBar').style.width=(qI/QD.length*100)+'%';document.getElementById('qQ').textContent=q.q;document.getElementById('qO').innerHTML=q.o.map((o,i)=>'<button class="quiz-option" onclick="aQ('+i+')">'+String.fromCharCode(65+i)+'. '+o+'</button>').join('');document.getElementById('qE').style.display='none';document.getElementById('qN').style.display='none';}
+function aQ(i){const q=QD[qI];document.querySelectorAll('#qO .quiz-option').forEach((o,j)=>{o.classList.add('disabled');if(j===q.a)o.classList.add('correct');if(j===i&&i!==q.a)o.classList.add('wrong');});if(i===q.a)qOk++;qA++;document.getElementById('qE').style.display='block';document.getElementById('qE').innerHTML='<div class="expl-box">'+(i===q.a?'&#9989; <strong>Correct!</strong> ':'&#10060; <strong>Wrong.</strong> Answer: <strong>'+q.o[q.a]+'</strong>. ')+q.e+'</div>';document.getElementById('qN').style.display='inline-flex';document.getElementById('qN').textContent=qI>=QD.length-1?'See Results':'Next';}
+function nxQ(){qI++;if(qI>=QD.length){go('result');return;}showQ();}
+
+// EVALUASI
+const ED=[
+  {q:"Which IMO resolution adopted the SMCP?",o:["A.851(20)","A.918(22)","A.1021(26)","A.760(18)"],a:1,e:"SMCP adopted by IMO Resolution A.918(22) in 2001."},
+  {q:"The correct phonetic spelling of 'SHIP' is?",o:["Sierra Hotel India Papa","Sugar Hotel India Peter","Sierra Harpo India Papa","Sam Hotel India Papa"],a:0,e:"S=Sierra, H=Hotel, I=India, P=Papa."},
+  {q:"What is the correct response to 'Port ten'?",o:["Port ten, Aye","Port ten, Sir","Yes Captain, turning left","Roger, port ten"],a:1,e:"Standard response: repeat the order + 'Sir'."},
+  {q:"MAYDAY must be said how many times?",o:["Once","Twice","Three times","Five times"],a:2,e:"MAYDAY is said 3 times at the beginning of the call."},
+  {q:"Time 1545 UTC is spoken as?",o:["Three forty-five PM","Fifteen forty five","One five four five UTC","Quarter to four UTC"],a:2,e:"Times spoken digit by digit: One Five Four Five UTC."},
+  {q:"Which is NOT a SMCP message marker?",o:["INSTRUCTION","COMMAND","WARNING","REQUEST"],a:1,e:"COMMAND is not a SMCP marker. The 8 markers are: INSTRUCTION, ADVICE, WARNING, INFORMATION, QUESTION, ANSWER, REQUEST, INTENTION."},
+  {q:"'I am not under command' means?",o:["I disagree with orders","Ship cannot be steered/controlled","Captain is not on bridge","Ship is not in military service"],a:1,e:"'Not under command' = vessel unable to maneuver as required."},
+  {q:"What information must be exchanged with pilot on boarding?",o:["Cargo value and insurance","Draft, course, speed, engine type","Crew nationality list","Weather forecast"],a:1,e:"Master-pilot exchange includes draft, course, speed, and engine particulars."},
+  {q:"'Dead slow ahead' is?",o:["Emergency stop","Minimum forward speed","Normal cruising speed","Maximum speed"],a:1,e:"Dead slow ahead = minimum forward engine speed."},
+  {q:"MMSI stands for?",o:["Maritime Mobile Service Identity","Marine Management Safety Index","Maritime Module Signal Identifier","Mobile Maritime Safety Information"],a:0,e:"MMSI = Maritime Mobile Service Identity, unique 9-digit ship ID."},
+  {q:"Bearing 180 from lighthouse means vessel is?",o:["North of lighthouse","South of lighthouse","East of lighthouse","West of lighthouse"],a:1,e:"Bearing 180 = due south from the reference point."},
+  {q:"'Make fast spring line' means?",o:["Throw the line quickly","Secure the spring mooring line","Speed up the mooring","Run with the line"],a:1,e:"Make fast = secure/tie. Spring line = diagonal mooring line."},
+  {q:"The Williamson Turn is used for?",o:["Entering port","Man overboard recovery","Avoiding collision","Docking"],a:1,e:"Williamson Turn is a standard man overboard recovery maneuver."},
+  {q:"'Nothing to starboard' means?",o:["There is nothing on the right","Do not turn right of current heading","Starboard side is clear","No ship to starboard"],a:1,e:"'Nothing to starboard' = do not allow the bow to swing right."},
+  {q:"What sound signal for man overboard?",o:["1 prolonged blast","3 prolonged blasts","5 short blasts","7 short + 1 long"],a:1,e:"3 prolonged blasts on the ship's whistle."},
+  {q:"STCW Code A-II/1 requires officers to?",o:["Speak 3 languages","Use English for navigation and understand SMCP","Have maritime English certificate","Pass IELTS 7.0"],a:1,e:"STCW A-II/1 requires adequate English for navigation and SMCP."},
+  {q:"'Con' in pilotage refers to?",o:["A scam","Control of navigation","Confidence level","Container operations"],a:1,e:"'The con' = control/command of ship navigation."},
+  {q:"Channel 16 frequency is?",o:["155.6 MHz","156.8 MHz","157.2 MHz","158.0 MHz"],a:1,e:"VHF Channel 16 = 156.8 MHz, international distress frequency."},
+  {q:"In cargo ops, 'Cargo is clear of hold 3' means?",o:["Cargo is transparent","All cargo removed from hold 3","Cargo is approved","Hold 3 is clean"],a:1,e:"Cargo is clear = all cargo has been discharged from that hold."},
+  {q:"Which is the correct distress priority order?",o:["SECURITE > PAN PAN > MAYDAY","PAN PAN > MAYDAY > SECURITE","MAYDAY > PAN PAN > SECURITE","MAYDAY > SECURITE > PAN PAN"],a:2,e:"MAYDAY (distress) > PAN PAN (urgency) > SECURITE (safety)."},
+];
+let eI=0,eOk=0,eA2=0,eUA=[];
+function startEv(){eI=0;eOk=0;eA2=0;eUA=[];document.getElementById('evIntro').style.display='none';document.getElementById('evActive').style.display='block';document.getElementById('evResult').style.display='none';showEv();}
+function showEv(){if(eI>=ED.length){showEvR();return;}const q=ED[eI];document.getElementById('evNum').textContent=(eI+1)+'/'+ED.length;document.getElementById('evAns').textContent=eA2+'/'+ED.length;document.getElementById('evBar').style.width=(eI/ED.length*100)+'%';document.getElementById('evQ').textContent=q.q;document.getElementById('evO').innerHTML=q.o.map((o,i)=>'<button class="quiz-option" onclick="aEv('+i+')">'+String.fromCharCode(65+i)+'. '+o+'</button>').join('');document.getElementById('evN').style.display='none';}
+function aEv(i){const q=ED[eI],ok=i===q.a;eUA.push({idx:i,correct:q.a,isCorrect:ok});if(ok)eOk++;eA2++;document.querySelectorAll('#evO .quiz-option').forEach((o,j)=>{o.classList.add('disabled');if(j===q.a)o.classList.add('correct');if(j===i&&!ok)o.classList.add('wrong');});document.getElementById('evN').style.display='inline-flex';document.getElementById('evN').textContent=eI>=ED.length-1?'See Score':'Next';}
+function nxEv(){eI++;if(eI>=ED.length){showEvR();return;}showEv();}
+function showEvR(){
+  document.getElementById('evActive').style.display='none';document.getElementById('evResult').style.display='block';document.getElementById('evBar').style.width='100%';
+  const sc=eOk*5,pc=Math.round(eOk/ED.length*100);let g,gl,gc;
+  if(sc>=90){g='A';gl='Excellent';gc='var(--green)';}else if(sc>=80){g='B+';gl='Very Good';gc='var(--gold)';}else if(sc>=70){g='B';gl='Good';gc='var(--sky)';}else if(sc>=60){g='C';gl='Fair';gc='var(--gold)';}else if(sc>=50){g='D';gl='Needs Improvement';gc='#ff9f43';}else{g='E';gl='Must Restudy';gc='var(--red)';}
+  document.getElementById('evGL').textContent=g;document.getElementById('evGL').style.color=gc;document.getElementById('evGLb').textContent=gl;document.getElementById('evGS').textContent=sc+'/100';
+  document.getElementById('evC').textContent=eOk;document.getElementById('evW').textContent=ED.length-eOk;document.getElementById('evSV').textContent=sc;document.getElementById('evPV').textContent=pc+'%';
+  let bd='';ED.forEach((q,i)=>{const u=eUA[i],ic=u&&u.isCorrect?'&#9989;':'&#10060;';bd+='<div class="score-row"><div class="score-num">'+(i+1)+'.</div><div class="score-text"><div style="margin-bottom:2px">'+q.q+'</div><div style="font-size:0.76rem;color:'+(u&&u.isCorrect?'var(--green)':'var(--red)')+'">'+q.o[u.idx]+(u&&!u.isCorrect?' &rarr; <strong>'+q.o[q.a]+'</strong>':'')+'</div><div style="font-size:0.74rem;color:var(--gray)">'+q.e+'</div></div><div class="score-status">'+ic+'</div></div>';});
+  document.getElementById('evBD').innerHTML=bd;
+}
+function resetEv(){eI=0;eOk=0;eA2=0;eUA=[];document.getElementById('evIntro').style.display='block';document.getElementById('evActive').style.display='none';document.getElementById('evResult').style.display='none';}
+function updRes(){document.getElementById('rC').textContent=qOk;document.getElementById('rW').textContent=qA-qOk;if(eA2>0){document.getElementById('rEC').textContent=eOk;document.getElementById('rES').textContent=(eOk*5)+'/100';}}
+function resetAll(){qI=0;qOk=0;qA=0;qStarted=false;resetEv();go('home');}
+showSim(0);
+</script>
+</body>
+</html>
